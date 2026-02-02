@@ -1,0 +1,192 @@
+# Execution Manual for Social Media Platform MVP
+
+---
+
+## MODULE 0 – Orientation
+
+### What this project is:
+This project is a free-speech-oriented social media platform for adults, with a focus on chronological feeds, real-time communication, and user privacy. The platform leverages real identities while respecting GDPR compliance and ensuring strong security.
+
+### What the final MVP will do:
+- **Core functionality**:
+  - Account creation (email/password, real names, public/private profiles).
+  - Like/Comment on posts.
+  - Chronological feeds:
+    - Follower Feed (users can see posts by followed accounts).
+    - Exploration Feed (based on user interests).
+  - 1:1 direct messaging between users.
+  - Admin moderation tools for banning/removing posts.
+- **Technical foundation**: 
+  - Secure, stateless backend architecture.
+  - Scalable frontend connected to backend APIs.
+  - PostgreSQL for data storage and Redis for real-time communication.
+
+### What is explicitly out of scope:
+- Media uploads (e.g., images, videos).
+- Notifications.
+- Advanced interaction features like threaded comments/group chats.
+- Post-MVP extensibility such as dating modules, games, or public APIs.
+
+### How to use this manual:
+- Follow each module in order. 
+- Complete all steps and verification checklists before moving forward.
+- If a task or feature is labeled “Post-MVP,” skip it for now unless explicitly revisited later.
+
+---
+
+## MODULE 1 – Environment & Tooling Setup
+
+### Tools, Versions, and Accounts Needed:
+1. **Required tools**:
+   - Node.js: v18.x
+   - TypeScript: v5.x
+   - PostgreSQL: v15.x
+   - Redis: v7.x
+   - Git
+   - Docker (optional, for testing isolated environments).
+2. **Accounts to create** (if not already available):
+   - GitHub (for code repository and CI/CD pipelines).
+   - Hosting accounts (e.g., Render, Railway, or Fly.io).
+
+### What to install:
+1. Install Node.js and npm.
+2. Install TypeScript globally: `npm install -g typescript`.
+3. Install PostgreSQL and set up a local database instance.
+4. Install Redis and run locally or use a managed Redis instance.
+5. Install Git and clone the project repository.
+
+### What folders/files should exist at the end:
+- Project folder (from the Git repository).
+- Subfolders:
+  - `/src`: Main source code.
+  - `/config`: Configuration files for different environments.
+  - `/docs`: Documentation (PRD and other reference docs).
+
+### Verification checklist:
+- Verify Node.js, TypeScript, PostgreSQL, and Redis installations by checking versions:
+  - `node -v`
+  - `tsc -v`
+  - `psql --version`
+  - `redis-cli --version`
+- Ensure you can connect to both Redis and PostgreSQL locally.
+
+---
+
+## MODULE 2 – System Architecture (Conceptual)
+
+### High-level system overview:
+The platform uses a **modular monolith** architecture with the following components:
+1. **Frontend**: React app for user interaction using REST APIs.
+2. **Backend**: NestJS backend for API handling, authentication, and business logic.
+3. **Database**: PostgreSQL for relational data storage.
+4. **Real-time components**: Redis for real-time chat and scalable event handling.
+
+### Why this architecture was chosen:
+- **Simplicity**: Minimizes deployment complexity while enabling scalability.
+- **Extensibility**: Easily extendable for post-MVP features like dating modules and games.
+- **Performance**: Redis enables fast real-time messaging.
+
+### What not to change at this stage:
+- No microservices (the MVP focuses on a modular, monolithic approach).
+- Redis must be used for real-time communication (no alternative messaging layers).
+
+---
+
+## MODULE 3 – Backend Foundations
+
+### Step-by-step setup:
+1. **Initialize NestJS project**:
+   - Create a new project: `npx @nestjs/cli new backend --language=ts`.
+2. **Set up PostgreSQL connection**:
+   - Add `@nestjs/typeorm` and `pg` packages.
+   - Configure connection in `app.module.ts`.
+3. **Set up Redis connection**:
+   - Add `ioredis` package.
+   - Create a Redis provider for DI in NestJS.
+4. **Implement the authentication module**:
+   - Add `@nestjs/jwt` for JWT-based authentication.
+   - Include user signup, login, and token generation endpoints.
+
+### Module-by-module build order:
+1. `/auth`: Authentication and account management.
+2. `/users`: User profiles and interests.
+3. `/posts`: Posting and feed management.
+4. `/chat`: Real-time messaging.
+
+### Verification steps:
+- Run the backend with: `npm run start:dev`.
+- Test API endpoints using Postman or cURL.
+
+---
+
+## MODULE 4 – Frontend Foundations
+
+### Frontend setup and structure:
+1. Initialize a Create React App: `npx create-react-app frontend --template typescript`.
+2. Install required dependencies:
+   - `axios` for API calls.
+   - `tailwindcss` for styling.
+3. Organize folder structure:
+   - `/components`: Reusable UI components.
+   - `/screens`: Pages (Signup, Profile, Feeds).
+
+---
+
+## MODULE 5 – Core MVP Features
+
+### Authentication & Accounts:
+**Purpose**: Allow users to create and manage accounts.  
+**Where it lives**: `/auth` backend module, `/screens/Auth` frontend.  
+**Steps**:
+1. Implement account signup/login APIs.
+2. Create signup/login forms in React.  
+**Testing**:
+- Verify account creation with correct database records.
+
+---
+
+## MODULE 6 – Real-Time & Performance Foundations
+
+### Redis Setup:
+1. Configure real-time Pub/Sub channels.
+2. Integrate Redis with NestJS’s WebSocket Gateway for chat.
+---
+
+## MODULE 7 – Security, Privacy & GDPR
+
+### Required security measures:
+1. Implement bcrypt for password hashing.
+2. Ensure HTTPS-only connections.
+3. Add audit logs for all admin actions.
+
+---
+
+## MODULE 8 – Integration & Internal Testing
+
+### End-to-end scenarios:
+1. User signup → follow accounts → post → like/comment.
+
+---
+
+## MODULE 9 – Beta Preparation
+
+### Stable features before beta:
+- Authentication
+- Feeds
+- Chat
+
+---
+
+## MODULE 10 – Launch Readiness & Next Steps
+
+### Checklist:
+- Confirm all MVP features working.
+- Pre-launch bug fixes.
+
+### Deployment steps:
+1. Deploy backend and frontend.
+2. Set up monitoring tools.
+
+---
+
+Post-MVP roadmap focuses on future extensions like media uploads and notifications.
