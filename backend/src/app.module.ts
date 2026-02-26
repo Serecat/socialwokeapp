@@ -11,7 +11,16 @@ import { ModerationModule } from './moderation/moderation.module';
 import { CommonModule } from './common/common.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, PostsModule, ChatModule, FeedsModule, SocialGraphModule, ModerationModule, CommonModule],
+  imports: [
+    AuthModule,
+    UsersModule,
+    PostsModule,
+    ChatModule,
+    FeedsModule,
+    SocialGraphModule,
+    ModerationModule,
+    CommonModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

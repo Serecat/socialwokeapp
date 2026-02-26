@@ -14,6 +14,7 @@ export class PrismaService
   async onModuleInit() {
     const prismaClient = this as unknown as PrismaLifecycleClient;
     await prismaClient.$connect();
+    console.log('🟢 connected to database');
   }
 
   async onModuleDestroy() {
