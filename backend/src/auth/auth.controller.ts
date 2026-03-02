@@ -10,7 +10,12 @@ export class AuthController {
 
   @Post('register') // POST /auth/register
   async register(@Body() body: RegisterDto): Promise<RegisterResponseDto> {
-    return this.authService.register(body.email, body.password);
+    return this.authService.register(
+      body.email,
+      body.password,
+      body.firstName,
+      body.lastName,
+    );
   }
 
   @Post('login') // POST /auth/login

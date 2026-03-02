@@ -15,7 +15,12 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async register(email: string, pass: string): Promise<RegisterResponseDto> {
+  async register(
+    email: string,
+    pass: string,
+    firstName: string,
+    lastName: string,
+  ): Promise<RegisterResponseDto> {
     const hashedPassword = await bcrypt.hash(pass, 10);
 
     const exists = await this.prisma.user.findUnique({
@@ -27,12 +32,14 @@ export class AuthService {
     }
 
     const user = await this.prisma.user.create({
-      data: { email, password: hashedPassword },
+      data: { email, password: hashedPassword, firstName, lastName },
     });
 
     return {
       id: user.id,
       email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
     };
   }
 
