@@ -1,41 +1,46 @@
 import React, {useState} from 'react';
 import Login from './screens/Auth/Login';
 import Signup from './screens/Auth/Signup';
+import Feed from './screens/Feed/Feed';
+import Profile from './screens/Profile/Profile';
+
+type AuthMode = 'login' | 'signup';
+type AppView = 'auth' | 'feed' | 'profile';
 
 function App() {
-  const [authMode, setAuthmode] = useState<'login' | 'signup'>('login');
+  const [authMode, setAuthMode] = useState<AuthMode>('login');
+  const [view, setView] = useState<AppView>('auth');
   const [loggedInEmail, setLoggedInEmail] = useState('');
 
-  if (loggedInEmail) { 
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100 px-4">
-        <div className="w-full max-w-lg rounded-2xl bg-white p-8 text-center shadow-xl ring-1 ring-slate-900/10">
-          <h1 className="text-2xl font-bold text-slate-900">You are logged in</h1>
-          <p className="mt-3 text-slate-600">Signed in as {loggedInEmail}</p>
-          <button
-            type="button"
-            className="mt-6 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-            onClick={() => {
-              localStorage.removeItem('access_token');
-              setLoggedInEmail('');
-            }}
-          >
-            Logout 
-          </button>  
-        </div>
-      </main> 
-  );
-}
+  const handleLoginSuccess = (email: string) => {
+    setLoggedInEmail(email);
+    setView('feed');
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    setLoggedInEmail('');
+    setView('auth');
+    setAuthMode('login');
+  }
+
+    if (view === 'feed') {
+    return <Feed onOpenProfile={() => setView('profile')} onLogout={handleLogout} />;
+  }
+
+  if (view === 'profile') {
+    return <Profile email={loggedInEmail} onBackToFeed={() => setView('feed')} />;
+  }
 
 return (
-  <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-blue-100 px-4 py-10">
-    {authMode === 'login' ? (
-      <Login onSuccess={setLoggedInEmail} switchToSignup={() => setAuthmode('signup')} />
-    ) : (
-      <Signup switchToLogin={() => setAuthmode('login')} />  
-    )}
-  </main>
-);
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-blue-100 px-4 py-10">
+      {authMode === 'login' ? (
+        <Login onSuccess={handleLoginSuccess} switchToSignup={() => setAuthMode('signup')} />
+      ) : (
+        <Signup switchToLogin={() => setAuthMode('login')} />
+      )}
+    </main>
+  );
 }
 
 export default App;
