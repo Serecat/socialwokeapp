@@ -10,29 +10,31 @@ type AppView = 'auth' | 'feed' | 'profile';
 function App() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [view, setView] = useState<AppView>('auth');
-  const [loggedInEmail, setLoggedInEmail] = useState('');
-
-  const handleLoginSuccess = (email: string) => {
-    setLoggedInEmail(email);
+  
+  const handleLoginSuccess = (_email: string) => {
     setView('feed');
-  }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
-    setLoggedInEmail('');
     setView('auth');
     setAuthMode('login');
-  }
+  };
 
-    if (view === 'feed') {
+  if (view === 'feed') {
     return <Feed onOpenProfile={() => setView('profile')} onLogout={handleLogout} />;
   }
 
   if (view === 'profile') {
-    return <Profile email={loggedInEmail} onBackToFeed={() => setView('feed')} />;
+    return (
+      <Profile
+        onBackToFeed={() => setView('feed')}
+        onUnauthorized={handleLogout}
+      />
+    );
   }
 
-return (
+ return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-blue-100 px-4 py-10">
       {authMode === 'login' ? (
         <Login onSuccess={handleLoginSuccess} switchToSignup={() => setAuthMode('signup')} />

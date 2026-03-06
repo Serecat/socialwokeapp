@@ -83,7 +83,7 @@ const Signup: React.FC<SignupProps> = ({ switchToLogin }) => {
 
         </div>
         <div>
-          <label htmlFor="email">Email</label>
+          {/*<label htmlFor="email">Email</label>*/}
           <label htmlFor="email" className="block text-sm font-medium text-slate-700">
             Email
           </label>

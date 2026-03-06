@@ -27,11 +27,19 @@ export interface LoginPayload {
   password: string;
 }
 
+export interface UserProfileBasics {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+
 export const registerUser = async (payload: RegisterPayload) => {
   const response = await api.post('/auth/register', payload);
-  return response.data as { 
-    id: string; 
-    email: string
+  return response.data as {
+    id: string;
+    email: string;
     firstName: string;
     lastName: string;
   };
@@ -40,6 +48,11 @@ export const registerUser = async (payload: RegisterPayload) => {
 export const loginUser = async (payload: LoginPayload) => {
   const response = await api.post('/auth/login', payload);
   return response.data as { access_token: string };
+};
+
+export const getMyProfile = async () => {
+  const response = await api.get('/users/me');
+  return response.data as UserProfileBasics;
 };
 
 export default api;
