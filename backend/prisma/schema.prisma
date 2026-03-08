@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -21,4 +21,28 @@ model User {
   lastName  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  posts     Post[]
+}
+
+enum PostVisibility {
+  PUBLIC
+  FOLLOWERS_ONLY
+}
+
+model Post {
+  id         String         @id @default(uuid())
+  content    String         @db.Text // Use Text for longer posts
+  visibility PostVisibility @default(PUBLIC)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Null means active, timestamp means soft-deleted
+
+  // Indexes are critical for scaling social media feeds
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([deletedAt]) // Helps quickly filter out soft-deleted posts
 }
