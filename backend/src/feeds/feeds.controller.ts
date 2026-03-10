@@ -22,4 +22,8 @@ export class FeedController {
   getFeed(@Req() req: AuthRequest, @Query('cursor') cursor?: string) {
     return this.feedService.getFeed(req.user.userId, cursor);
   }
+  @Get('global')
+  getGlobalFeed(@Query('cursor') cursor?: string) {
+    return this.feedService.getGlobalFeed(cursor);
+  }
 }
