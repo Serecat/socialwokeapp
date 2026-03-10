@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreatePostDto } from './posts-dto/create-posts.dto';
+import { UpdatePostDto } from './posts-dto/update-posts.dto';
 
 @Injectable()
 export class PostsService {
@@ -19,6 +20,46 @@ export class PostsService {
     });
   }
 
+  async getPostById(postId: string) {
+    return this.prisma.post.findFirst({
+      where: {
+        id: postId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        likeCount: true,
+        commentCount: true,
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updatePost(userId: string, postId: string, dto: UpdatePostDto) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+
+    if (!post || post.authorId !== userId) {
+      throw new ForbiddenException();
+    }
+
+    return this.prisma.post.update({
+      where: { id: postId },
+      data: {
+        content: dto.content,
+        visibility: dto.visibility,
+      },
+    });
+  }
   // Example of handling the Soft Delete
   async softDelete(userId: string, postId: string) {
     const post = await this.prisma.post.findUnique({ where: { id: postId } });
@@ -36,5 +77,45 @@ export class PostsService {
       where: { id: postId },
       data: { deletedAt: new Date() },
     });
+  }
+
+  async getUserPosts(userId: string, cursor?: string, limit = 20) {
+    const posts = await this.prisma.post.findMany({
+      take: limit + 1,
+
+      ...(cursor && {
+        cursor: { id: cursor },
+        skip: 1,
+      }),
+
+      where: {
+        authorId: userId,
+        deletedAt: null,
+      },
+
+      orderBy: {
+        createdAt: 'desc',
+      },
+
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        likeCount: true,
+        commentCount: true,
+      },
+    });
+
+    let nextCursor: string | null = null;
+
+    if (posts.length > limit) {
+      const nextItem = posts.pop();
+      nextCursor = nextItem!.id;
+    }
+
+    return {
+      data: posts,
+      nextCursor,
+    };
   }
 }

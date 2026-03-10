@@ -54,7 +54,7 @@ Core Principles
 
 -   Text-only posts
 -   Timestamped
--   Visibility: public or followers-only
+-   Visibility: public
 -   Soft deletion support for moderation
 
 3.5 Feeds

@@ -22,6 +22,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   posts     Post[]
+
+  comments  Comment[]
+  likes     PostLike[]
+
+  followers Follow[] @relation("followers")
+  following Follow[] @relation("following")
 }
 
 enum PostVisibility {
@@ -41,8 +47,54 @@ model Post {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // Null means active, timestamp means soft-deleted
 
+  likeCount     Int @default(0)
+  commentCount  Int @default(0)
+
+  comments Comment[]
+  likes    PostLike[]
+
   // Indexes are critical for scaling social media feeds
-  @@index([authorId])
+  @@index([authorId, createdAt])
   @@index([createdAt])
   @@index([deletedAt]) // Helps quickly filter out soft-deleted posts
+}
+
+model Comment {
+  id        String @id @default(uuid())
+  postId    String
+  authorId  String
+
+  content   String @db.Text
+
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+
+  post   Post @relation(fields: [postId], references: [id])
+  author User @relation(fields: [authorId], references: [id])
+
+  @@index([postId, createdAt])
+}
+
+model PostLike {
+  userId String
+  postId String
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@id([userId, postId])
+}
+
+model Follow {
+  followerId  String
+  followingId String
+
+  createdAt DateTime @default(now())
+
+  follower  User @relation("following", fields: [followerId], references: [id])
+  following User @relation("followers", fields: [followingId], references: [id])
+
+  @@id([followerId, followingId])
 }
