@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getMyProfile, UserProfileBasics } from '../../services/api';
+import { FeedPost, getMyPosts, getMyProfile, UserProfileBasics } from '../../services/api';
 
 interface ProfileProps {
   onBackToFeed: () => void;
@@ -8,14 +8,19 @@ interface ProfileProps {
 
 const Profile: React.FC<ProfileProps> = ({ onBackToFeed, onUnauthorized }) => {
   const [profile, setProfile] = useState<UserProfileBasics | null>(null);
+  const [posts, setPosts] = useState<FeedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const response = await getMyProfile();
-        setProfile(response);
+        const [profileResponse, postsResponse] = await Promise.all([
+          getMyProfile(),
+          getMyPosts(),
+        ]);
+        setProfile(profileResponse);
+        setPosts(postsResponse.data);
       } catch {
         const hasToken = Boolean(localStorage.getItem('access_token'));
         if (hasToken) {
@@ -34,7 +39,7 @@ const Profile: React.FC<ProfileProps> = ({ onBackToFeed, onUnauthorized }) => {
 
   return (
     <main className="min-h-screen bg-slate-100 px-4 py-8">
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto w-full max-w-3xl space-y-4">
         <button
           type="button"
           onClick={onBackToFeed}
@@ -58,7 +63,7 @@ const Profile: React.FC<ProfileProps> = ({ onBackToFeed, onUnauthorized }) => {
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 <div className="rounded-xl border border-slate-200 p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500">Posts</p>
-                  <p className="mt-2 text-2xl font-semibold text-slate-900">0</p>
+                  <p className="mt-2 text-2xl font-semibold text-slate-900">{posts.length}</p>
                 </div>
                 <div className="rounded-xl border border-slate-200 p-4">
                   <p className="text-xs uppercase tracking-wide text-slate-500">Followers</p>
@@ -67,6 +72,25 @@ const Profile: React.FC<ProfileProps> = ({ onBackToFeed, onUnauthorized }) => {
               </div>
             </>
           ) : null}
+        </section>
+
+        <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5">
+          <h2 className="text-lg font-semibold text-slate-900">Your posts</h2>
+          {isLoading ? null : posts.length === 0 ? (
+            <p className="mt-3 text-sm text-slate-600">You have not posted anything yet.</p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {posts.map((post) => (
+                <article key={post.id} className="rounded-xl border border-slate-200 p-4">
+                  <p className="whitespace-pre-wrap text-sm text-slate-800">{post.content}</p>
+                  <div className="mt-3 flex gap-2 text-xs text-slate-600">
+                    <span className="rounded-full bg-slate-100 px-3 py-1">❤️ {post.likeCount}</span>
+                    <span className="rounded-full bg-slate-100 px-3 py-1">💬 {post.commentCount}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>

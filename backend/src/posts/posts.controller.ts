@@ -8,6 +8,7 @@ import {
   Param,
   Get,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { Request as ExpressRequest } from 'express';
 import { PostsService } from './posts.service';
@@ -33,6 +34,11 @@ export class PostsController {
   create(@Request() req: AuthRequest, @Body() createPostDto: CreatePostDto) {
     // req.user.id is populated securely by your JWT Auth Guard
     return this.postsService.createPost(req.user.userId, createPostDto);
+  }
+
+  @Get('me/posts')
+  getMyPosts(@Request() req: AuthRequest, @Query('cursor') cursor?: string) {
+    return this.postsService.getUserPosts(req.user.userId, cursor);
   }
 
   @Get(':id')
