@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { CreatePostDto } from './posts-dto/create-posts.dto';
@@ -20,7 +21,7 @@ export class PostsService {
     });
   }
 
-  async getPostById(postId: string) {
+  async getPostById(userId: string, postId: string) {
     return this.prisma.post.findFirst({
       where: {
         id: postId,
@@ -32,6 +33,27 @@ export class PostsService {
         createdAt: true,
         likeCount: true,
         commentCount: true,
+        likes: {
+          where: { userId },
+          select: { userId: true },
+        },
+        comments: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          select: {
+            id: true,
+            content: true,
+            createdAt: true,
+            author: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
         author: {
           select: {
             id: true,
@@ -61,6 +83,7 @@ export class PostsService {
     });
   }
   // Example of handling the Soft Delete
+
   async softDelete(userId: string, postId: string) {
     const post = await this.prisma.post.findUnique({ where: { id: postId } });
 
@@ -79,7 +102,12 @@ export class PostsService {
     });
   }
 
-  async getUserPosts(userId: string, cursor?: string, limit = 20) {
+  async getUserPosts(
+    userId: string,
+    viewerId: string,
+    cursor?: string,
+    limit = 20,
+  ) {
     const posts = await this.prisma.post.findMany({
       take: limit + 1,
 
@@ -91,6 +119,7 @@ export class PostsService {
       where: {
         authorId: userId,
         deletedAt: null,
+        ...(viewerId === userId ? {} : { visibility: 'PUBLIC' }),
       },
 
       orderBy: {
@@ -103,6 +132,10 @@ export class PostsService {
         createdAt: true,
         likeCount: true,
         commentCount: true,
+        likes: {
+          where: { userId: viewerId },
+          select: { userId: true },
+        },
       },
     });
 
@@ -117,5 +150,107 @@ export class PostsService {
       data: posts,
       nextCursor,
     };
+  }
+
+  async toggleLike(userId: string, postId: string) {
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const existingLike = await this.prisma.postLike.findUnique({
+      where: { userId_postId: { userId, postId } },
+    });
+
+    if (existingLike) {
+      await this.prisma.$transaction([
+        this.prisma.postLike.delete({
+          where: { userId_postId: { userId, postId } },
+        }),
+        this.prisma.post.update({
+          where: { id: postId },
+          data: { likeCount: { decrement: 1 } },
+        }),
+      ]);
+      return { liked: false };
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.postLike.create({ data: { userId, postId } }),
+      this.prisma.post.update({
+        where: { id: postId },
+        data: { likeCount: { increment: 1 } },
+      }),
+    ]);
+
+    return { liked: true };
+  }
+
+  async addComment(userId: string, postId: string, content: string) {
+    const trimmedContent = content?.trim();
+    if (!trimmedContent) {
+      throw new BadRequestException('Comment content is required');
+    }
+
+    const post = await this.prisma.post.findFirst({
+      where: { id: postId, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    const [comment] = await this.prisma.$transaction([
+      this.prisma.comment.create({
+        data: {
+          authorId: userId,
+          postId,
+          content: trimmedContent,
+        },
+        select: {
+          id: true,
+          content: true,
+          createdAt: true,
+          author: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      }),
+      this.prisma.post.update({
+        where: { id: postId },
+        data: { commentCount: { increment: 1 } },
+      }),
+    ]);
+
+    return comment;
+  }
+
+  async getPostComments(postId: string) {
+    return this.prisma.comment.findMany({
+      where: { postId, deletedAt: null },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      select: {
+        id: true,
+        content: true,
+        createdAt: true,
+        author: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
   }
 }

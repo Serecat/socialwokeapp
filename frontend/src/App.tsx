@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Login from './screens/Auth/Login';
 import Signup from './screens/Auth/Signup';
 import Feed from './screens/Feed/Feed';
@@ -10,7 +10,8 @@ type AppView = 'auth' | 'feed' | 'profile';
 function App() {
   const [authMode, setAuthMode] = useState<AuthMode>('login');
   const [view, setView] = useState<AppView>('auth');
-  
+  const [selectedUserId, setSelectedUserId] = useState<string | undefined>(undefined);
+
   const handleLoginSuccess = (_email: string) => {
     setView('feed');
   };
@@ -19,22 +20,36 @@ function App() {
     localStorage.removeItem('access_token');
     setView('auth');
     setAuthMode('login');
+    setSelectedUserId(undefined);
   };
 
   if (view === 'feed') {
-    return <Feed onOpenProfile={() => setView('profile')} onLogout={handleLogout} />;
+    return (
+      <Feed
+        onOpenProfile={() => {
+          setSelectedUserId(undefined);
+          setView('profile');
+        }}
+        onOpenUserProfile={(userId) => {
+          setSelectedUserId(userId);
+          setView('profile');
+        }}
+        onLogout={handleLogout}
+      />
+    );
   }
 
   if (view === 'profile') {
     return (
       <Profile
+        userId={selectedUserId}
         onBackToFeed={() => setView('feed')}
         onUnauthorized={handleLogout}
       />
     );
   }
 
- return (
+  return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-blue-100 px-4 py-10">
       {authMode === 'login' ? (
         <Login onSuccess={handleLoginSuccess} switchToSignup={() => setAuthMode('signup')} />

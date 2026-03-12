@@ -38,12 +38,25 @@ export class PostsController {
 
   @Get('me/posts')
   getMyPosts(@Request() req: AuthRequest, @Query('cursor') cursor?: string) {
-    return this.postsService.getUserPosts(req.user.userId, cursor);
+    return this.postsService.getUserPosts(
+      req.user.userId,
+      req.user.userId,
+      cursor,
+    );
+  }
+
+  @Get('user/:userId/posts')
+  getUserPosts(
+    @Request() req: AuthRequest,
+    @Param('userId') userId: string,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.postsService.getUserPosts(userId, req.user.userId, cursor);
   }
 
   @Get(':id')
-  getPost(@Param('id') id: string) {
-    return this.postsService.getPostById(id);
+  getPost(@Request() req: AuthRequest, @Param('id') id: string) {
+    return this.postsService.getPostById(req.user.userId, id);
   }
 
   @Patch(':id')
@@ -58,5 +71,24 @@ export class PostsController {
   @Delete(':id')
   remove(@Request() req: AuthRequest, @Param('id') id: string) {
     return this.postsService.softDelete(req.user.userId, id);
+  }
+
+  @Post(':id/likes')
+  toggleLike(@Request() req: AuthRequest, @Param('id') postId: string) {
+    return this.postsService.toggleLike(req.user.userId, postId);
+  }
+
+  @Post(':id/comments')
+  addComment(
+    @Request() req: AuthRequest,
+    @Param('id') postId: string,
+    @Body('content') content: string,
+  ) {
+    return this.postsService.addComment(req.user.userId, postId, content);
+  }
+
+  @Get(':id/comments')
+  getComments(@Param('id') postId: string) {
+    return this.postsService.getPostComments(postId);
   }
 }

@@ -42,12 +42,20 @@ export interface PostAuthor {
   lastName: string;
 }
 
+export interface PostComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: PostAuthor;
+}
+
 export interface FeedPost {
   id: string;
   content: string;
   createdAt: string;
   likeCount: number;
   commentCount: number;
+  likes?: { userId: string }[];
   author?: PostAuthor;
 }
 
@@ -82,6 +90,16 @@ export const getMyProfile = async () => {
   return response.data as UserProfileBasics;
 };
 
+export const getUserProfile = async (userId: string) => {
+  const response = await api.get(`/users/${userId}`);
+  return response.data as UserProfileBasics;
+};
+
+export const searchUsers = async (query: string) => {
+  const response = await api.get('/users/search', { params: { q: query } });
+  return response.data as UserProfileBasics[];
+};
+
 export const getFeed = async (feedType: FeedType, cursor?: string) => {
   const endpoint = feedType === 'global' ? '/feed/global' : '/feed';
   const response = await api.get(endpoint, {
@@ -98,6 +116,21 @@ export const createPost = async (payload: CreatePostPayload) => {
   return response.data as FeedPost;
 };
 
+export const togglePostLike = async (postId: string) => {
+  const response = await api.post(`/posts/${postId}/likes`);
+  return response.data as { liked: boolean };
+};
+
+export const addPostComment = async (postId: string, content: string) => {
+  const response = await api.post(`/posts/${postId}/comments`, { content });
+  return response.data as PostComment;
+};
+
+export const getPostComments = async (postId: string) => {
+  const response = await api.get(`/posts/${postId}/comments`);
+  return response.data as PostComment[];
+};
+
 export const getMyPosts = async (cursor?: string) => {
   const response = await api.get('/posts/me/posts', {
     params: {
@@ -107,6 +140,5 @@ export const getMyPosts = async (cursor?: string) => {
 
   return response.data as PaginatedPostsResponse;
 };
-
 
 export default api;
