@@ -29,4 +29,29 @@ export class UsersService {
 
     return user;
   }
+  async searchUsers(query: string, limit = 10) {
+    const trimmedQuery = query.trim();
+
+    if (trimmedQuery.length < 2) {
+      return [];
+    }
+
+    return this.prisma.user.findMany({
+      where: {
+        OR: [
+          { firstName: { contains: trimmedQuery, mode: 'insensitive' } },
+          { lastName: { contains: trimmedQuery, mode: 'insensitive' } },
+          { email: { contains: trimmedQuery, mode: 'insensitive' } },
+        ],
+      },
+      take: limit,
+      orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+    });
+  }
 }

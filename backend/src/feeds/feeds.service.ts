@@ -35,7 +35,10 @@ export class FeedService {
         createdAt: true,
         likeCount: true,
         commentCount: true,
-
+        likes: {
+          where: { userId },
+          select: { userId: true },
+        },
         author: {
           select: {
             id: true,
@@ -58,7 +61,7 @@ export class FeedService {
       nextCursor,
     };
   }
-  async getGlobalFeed(cursor?: string, limit = 20) {
+  async getGlobalFeed(userId: string, cursor?: string, limit = 20) {
     const posts = await this.prisma.post.findMany({
       take: limit + 1,
 
@@ -82,6 +85,10 @@ export class FeedService {
         createdAt: true,
         likeCount: true,
         commentCount: true,
+        likes: {
+          where: { userId },
+          select: { userId: true },
+        },
         author: {
           select: {
             id: true,

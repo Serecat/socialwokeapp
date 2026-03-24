@@ -6,7 +6,6 @@ import { Request as ExpressRequest } from 'express';
 
 interface JwtUser {
   userId: string;
-  email: string;
 }
 
 interface AuthRequest extends ExpressRequest {
@@ -23,7 +22,7 @@ export class FeedController {
     return this.feedService.getFeed(req.user.userId, cursor);
   }
   @Get('global')
-  getGlobalFeed(@Query('cursor') cursor?: string) {
-    return this.feedService.getGlobalFeed(cursor);
+  getGlobalFeed(@Req() req: AuthRequest, @Query('cursor') cursor?: string) {
+    return this.feedService.getGlobalFeed(req.user.userId, cursor);
   }
 }
