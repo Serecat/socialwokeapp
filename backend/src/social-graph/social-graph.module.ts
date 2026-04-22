@@ -4,6 +4,6 @@ import { SocialGraphController } from './social-graph.controller';
 
 @Module({
   providers: [SocialGraphService],
-  controllers: [SocialGraphController]
+  controllers: [SocialGraphController],
 })
 export class SocialGraphModule {}
