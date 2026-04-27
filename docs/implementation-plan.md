@@ -148,17 +148,17 @@
 
 ---
 
-#### 0.1 – Security baseline & code hygiene
+#### ✅ 0.1 – Security baseline & code hygiene
 **Objective:** Fix the top critical vulnerabilities and clean up obvious code issues.
 
 **Key tasks:**
-- Add `@nestjs/config` with Joi startup validation for `JWT_SECRET` (min 32 chars), `DATABASE_URL`, `CORS_ORIGIN`
-- Install `@nestjs/throttler` with Redis store (see 0.6); apply 5 req/min to auth routes
-- Remove `email` from `select` in `users.service.ts` (`searchUsers` + `getProfileBasicsById`); email visible only via `/users/me`
-- Create `CreateCommentDto` (`@IsString() @MaxLength(1000) content`) and apply to the comment endpoint
-- Align `UpdatePostDto` `MaxLength` to 2000
-- Remove debug `console.group` block from `Signup.tsx`
-- Remove redundant `jsonwebtoken` dependency from `backend/package.json`
+- ✅ Add `@nestjs/config` with Joi startup validation for `JWT_SECRET` (min 32 chars), `DATABASE_URL`, `CORS_ORIGIN`
+- ✅ Install `@nestjs/throttler` with Redis store (see 0.6); apply 5 req/min to auth routes
+- ✅ Remove `email` from `select` in `users.service.ts` (`searchUsers` + `getProfileBasicsById`); email visible only via `/users/me`
+- ✅ Create `CreateCommentDto` (`@IsString() @MaxLength(1000) content`) and apply to the comment endpoint
+- ✅ Align `UpdatePostDto` `MaxLength` to 2000
+- ✅ Remove debug `console.group` block from `Signup.tsx`
+- ✅ Remove redundant `jsonwebtoken` dependency from `backend/package.json`
 
 **Files:**
 - `backend/src/main.ts`
@@ -175,17 +175,17 @@
 
 ---
 
-#### 0.2 – Full httpOnly cookie + refresh token auth flow
+#### ✅ 0.2 – Full httpOnly cookie + refresh token auth flow
 **Objective:** Replace `localStorage` JWT with a secure cookie-based session system as specified in the PRD.
 
 **Key tasks:**
-- Add `RefreshToken` model to Prisma schema: `id`, `userId`, `tokenHash`, `expiresAt`, `createdAt`
-- Implement `POST /auth/refresh`: validate refresh token cookie → issue new access token + rotate refresh token
-- Implement `POST /auth/logout`: invalidate refresh token in DB, clear cookie
-- Update `login` response: access token in JSON body (short-lived, 15 min), refresh token as `httpOnly + Secure + SameSite=Strict` cookie (30-day expiry)
-- Frontend: remove `localStorage.setItem('access_token')`; store access token in React context/state only
-- Add axios response interceptor for 401 → silent `/auth/refresh` → retry original request
-- Handle refresh failure by redirecting to login
+- ✅ Add `RefreshToken` model to Prisma schema: `id`, `userId`, `tokenHash`, `expiresAt`, `createdAt`
+- ✅ Implement `POST /auth/refresh`: validate refresh token cookie → issue new access token + rotate refresh token
+- ✅ Implement `POST /auth/logout`: invalidate refresh token in DB, clear cookie
+- ✅ Update `login` response: access token in JSON body (short-lived, 15 min), refresh token as `httpOnly + Secure + SameSite=Strict` cookie (30-day expiry)
+- ✅ Frontend: remove `localStorage.setItem('access_token')`; store access token in React context/state only
+- ✅ Add axios response interceptor for 401 → silent `/auth/refresh` → retry original request
+- ✅ Handle refresh failure by redirecting to login
 
 **Files:**
 - `backend/prisma/schema.prisma` (new `RefreshToken` model)

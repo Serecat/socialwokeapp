@@ -23,11 +23,24 @@ model User {
   updatedAt DateTime @updatedAt
   posts     Post[]
 
-  comments  Comment[]
-  likes     PostLike[]
+  comments      Comment[]
+  likes         PostLike[]
+  refreshTokens RefreshToken[]
 
   followers Follow[] @relation("followers")
   following Follow[] @relation("following")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum PostVisibility {
