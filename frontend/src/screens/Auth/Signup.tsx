@@ -31,12 +31,6 @@ const Signup: React.FC<SignupProps> = ({ switchToLogin }) => {
       setPassword('');
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        console.group('Registration Error');
-        console.log('Message:', err.message);
-        console.log('Status:', err.response?.status);
-        console.log('Response:', err.response?.data);
-        console.log('Request URL:', err.config?.url);
-        console.groupEnd();
         setError(err.response?.data?.message || 'Unable t register. Please try again.');
       } else {
         setError('Unable to register. Please try again.');

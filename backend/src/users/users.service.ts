@@ -3,7 +3,6 @@ import { PrismaService } from '../common/prisma.service';
 
 type UserProfileBasics = {
   id: string;
-  email: string;
   firstName: string;
   lastName: string;
 };
@@ -17,7 +16,6 @@ export class UsersService {
       where: { id: userId },
       select: {
         id: true,
-        email: true,
         firstName: true,
         lastName: true,
       },
@@ -41,7 +39,6 @@ export class UsersService {
         OR: [
           { firstName: { contains: trimmedQuery, mode: 'insensitive' } },
           { lastName: { contains: trimmedQuery, mode: 'insensitive' } },
-          { email: { contains: trimmedQuery, mode: 'insensitive' } },
         ],
       },
       take: limit,
@@ -50,7 +47,6 @@ export class UsersService {
         id: true,
         firstName: true,
         lastName: true,
-        email: true,
       },
     });
   }
