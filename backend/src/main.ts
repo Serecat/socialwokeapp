@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
-//import 'dotenv/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -10,14 +10,16 @@ async function bootstrap() {
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
   );
 
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
-app.enableCors({
-  origin: corsOrigin,
-  credentials: true,
-});
+  const config = app.get(ConfigService);
+  const corsOrigin = config.get<string>('CORS_ORIGIN')!;
+
+  app.enableCors({
+    origin: corsOrigin,
+    credentials: true,
+  });
 
   app.enableShutdownHooks();
-  await app.listen(process.env.PORT ?? 3001);
+  await app.listen(config.get<number>('PORT') ?? 3001);
 }
 
-bootstrap();
+void bootstrap();

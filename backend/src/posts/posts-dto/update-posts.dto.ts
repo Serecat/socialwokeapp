@@ -4,7 +4,7 @@ import { PostVisibility } from '@prisma/client';
 export class UpdatePostDto {
   @IsOptional()
   @IsString()
-  @MaxLength(5000)
+  @MaxLength(2000)
   content?: string;
 
   @IsOptional()

@@ -15,6 +15,7 @@ import { PostsService } from './posts.service';
 import { CreatePostDto } from './posts-dto/create-posts.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UpdatePostDto } from './posts-dto/update-posts.dto';
+import { CreateCommentDto } from './posts-dto/create-comment.dto';
 
 interface JwtUser {
   userId: string;
@@ -82,9 +83,9 @@ export class PostsController {
   addComment(
     @Request() req: AuthRequest,
     @Param('id') postId: string,
-    @Body('content') content: string,
+    @Body() dto: CreateCommentDto,
   ) {
-    return this.postsService.addComment(req.user.userId, postId, content);
+    return this.postsService.addComment(req.user.userId, postId, dto.content);
   }
 
   @Get(':id/comments')
