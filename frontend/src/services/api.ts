@@ -1,19 +1,92 @@
 import axios from 'axios';
 
+// In-memory access token store — never persisted to localStorage
+let _accessToken: string | null = null;
+let _onUnauthenticated: (() => void) | null = null;
+let _isRefreshing = false;
+let _refreshSubscribers: Array<(token: string | null) => void> = [];
+
+export const setAccessToken = (token: string | null): void => {
+  _accessToken = token;
+};
+
+export const getAccessToken = (): string | null => _accessToken;
+
+export const setOnUnauthenticated = (fn: () => void): void => {
+  _onUnauthenticated = fn;
+};
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // required for httpOnly refresh-token cookie
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
-  if (token && config.headers) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (_accessToken && config.headers) {
+    config.headers.Authorization = `Bearer ${_accessToken}`;
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config as typeof error.config & {
+      _retry?: boolean;
+    };
+
+    const isAuthEndpoint = (originalRequest.url as string)?.includes('/auth/');
+
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      !isAuthEndpoint
+    ) {
+      if (_isRefreshing) {
+        return new Promise((resolve, reject) => {
+          _refreshSubscribers.push((token) => {
+            if (token) {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
+              resolve(api(originalRequest));
+            } else {
+              reject(error);
+            }
+          });
+        });
+      }
+
+      originalRequest._retry = true;
+      _isRefreshing = true;
+
+      try {
+        const { data } = await axios.post<{ access_token: string }>(
+          `${api.defaults.baseURL}/auth/refresh`,
+          {},
+          { withCredentials: true },
+        );
+        const newToken = data.access_token;
+        setAccessToken(newToken);
+        _refreshSubscribers.forEach((cb) => cb(newToken));
+        _refreshSubscribers = [];
+        _isRefreshing = false;
+        originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+        return api(originalRequest);
+      } catch {
+        setAccessToken(null);
+        _refreshSubscribers.forEach((cb) => cb(null));
+        _refreshSubscribers = [];
+        _isRefreshing = false;
+        _onUnauthenticated?.();
+        return Promise.reject(error);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export interface RegisterPayload {
   firstName: string;
@@ -139,6 +212,10 @@ export const getMyPosts = async (cursor?: string) => {
   });
 
   return response.data as PaginatedPostsResponse;
+};
+
+export const logoutUser = async () => {
+  await api.post('/auth/logout');
 };
 
 export default api;

@@ -1,9 +1,9 @@
 import React, { FormEvent, useState } from 'react';
 import axios from 'axios';
-import { loginUser } from '../../services/api';
+import { loginUser, setAccessToken } from '../../services/api';
 
 interface LoginProps {
-  onSuccess: (email: string) => void;
+  onSuccess: () => void;
   switchToSignup: () => void;
 }
 
@@ -21,8 +21,8 @@ const Login: React.FC<LoginProps> = ({ onSuccess, switchToSignup }) => {
 
         try {
       const response = await loginUser({ email, password });
-      localStorage.setItem('access_token', response.access_token);
-      onSuccess(email);
+      setAccessToken(response.access_token);
+      onSuccess();
     } catch (err) {
       if (axios.isAxiosError(err)) {
         setError(err.response?.data?.message || 'Unable to login. Please try again.');

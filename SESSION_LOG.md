@@ -58,3 +58,26 @@ Changes: N/A
 Approved by: N/A
 Approved at: N/A
 Plan updates made: N/A
+
+Timestamp: 2026-04-27T20:01:08+00:00
+Headline: Phase 0.2 – Full httpOnly cookie + refresh token auth flow
+Refs: branch copilot/implement-phase-0-2
+Summary: Replaced localStorage JWT storage with a secure httpOnly cookie-based session system. Access tokens are now short-lived (15 min) and kept in React memory only. Refresh tokens (30-day) are stored hashed (SHA-256) in a new RefreshToken DB table and delivered via an httpOnly + Secure + SameSite=Strict cookie. A 401 interceptor silently rotates the token and retries failed requests; on rotation failure the user is redirected to login.
+Implementation notes:
+- Added RefreshToken model to prisma/schema.prisma (id, userId, tokenHash unique, expiresAt, createdAt) with CASCADE delete from User; manual migration SQL created in prisma/migrations/20260427200000_add_refresh_token/.
+- Installed cookie-parser + @types/cookie-parser; wired app.use(cookieParser()) in main.ts.
+- auth.module.ts: JWT signOptions expiry changed from 1h → 15m.
+- auth.service.ts: login() now generates a 128-char hex refresh token, hashes it with SHA-256, persists the hash, and sets the httpOnly cookie (path /auth). New refresh() method validates the cookie token against the DB, atomically rotates (delete + insert in $transaction), and issues a new access token. New logout() deletes the DB record and clears the cookie.
+- auth.controller.ts: POST /auth/login updated to inject @Res({ passthrough: true }); new POST /auth/refresh and POST /auth/logout endpoints added (all still under the 5 req/min throttle).
+- frontend/src/services/api.ts: removed localStorage token read; added module-level _accessToken, setAccessToken(), getAccessToken(), setOnUnauthenticated() exports; axios instance gains withCredentials: true; added 401 response interceptor with concurrent-request queuing that calls /auth/refresh, retries the original request on success, or calls onUnauthenticated() on failure.
+- frontend/src/screens/Auth/Login.tsx: replaced localStorage.setItem with setAccessToken(); onSuccess prop simplified (no longer passes email).
+- frontend/src/App.tsx: added useEffect that fires a silent POST /auth/refresh on mount (restores session from cookie after page reload); loading state shown during the attempt; logout now calls logoutUser() API then clears in-memory token; setOnUnauthenticated(goToAuth) registered on mount.
+- frontend/src/App.test.tsx: updated to mock axios.post to reject (simulating no refresh cookie) and use waitFor so the test waits for the async mount effect to settle before asserting the login heading.
+Validation: backend npm run build (pass), backend npm run lint (pass), backend npm run test (1 pre-existing failure: AppController "Hello NIXON!" vs "Hello World!" — unrelated), frontend npm run build (pass), frontend npm test (pass — 1 test updated to match new async loading behaviour).
+Security/privacy notes: Refresh tokens are stored only as SHA-256 hashes — the raw token is never persisted. Token rotation is atomic (Prisma $transaction) to prevent replay attacks. The httpOnly + Secure + SameSite=Strict cookie flags prevent XSS token theft and CSRF. Access token is kept only in JS memory and is never written to localStorage or any non-httpOnly cookie.
+Spec/requirements changes approved: No
+If Yes:
+Changes: N/A
+Approved by: N/A
+Approved at: N/A
+Plan updates made: implementation-plan.md — added ✅ checkmarks to Phase 0.1 and Phase 0.2 task lists and section headings.
