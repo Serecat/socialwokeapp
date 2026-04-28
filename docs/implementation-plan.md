@@ -203,35 +203,33 @@
 
 ---
 
-#### 0.3 – Tailwind CSS as a proper build dependency
+#### ✅ 0.3 – Tailwind CSS as a proper build dependency
 **Objective:** Remove the CDN `<script>` tag; ensure Tailwind is tree-shaken at build time.
 
 **Key tasks:**
-- `npm install -D tailwindcss postcss autoprefixer` in `frontend/`
-- `npx tailwindcss init -p` (generates `tailwind.config.js` + `postcss.config.js`)
-- Configure `content` paths in `tailwind.config.js`
-- Add `@tailwind base; @tailwind components; @tailwind utilities;` to `frontend/src/index.css`
-- Remove CDN `<script>` tag from `frontend/index.html`
+- ✅ `npm install -D tailwindcss postcss autoprefixer @tailwindcss/vite` in `frontend/`
+- ✅ Add `@tailwindcss/vite` plugin to `vite.config.ts` (Tailwind v4 Vite-first approach)
+- ✅ Add `@import "tailwindcss"` to `frontend/src/index.css`
+- ✅ Remove CDN `<script>` tag from `frontend/index.html`
 
 **Files:**
 - `frontend/index.html`
 - `frontend/src/index.css`
 - `frontend/package.json`
-- `frontend/tailwind.config.js` (new)
-- `frontend/postcss.config.js` (new)
+- `frontend/vite.config.ts`
 
 **Effort:** S  
 **Validation:** `npm run build` succeeds with no CDN script tag; Tailwind classes still render correctly in `npm run dev`.
 
 ---
 
-#### 0.4 – Global exception filter + Helmet
+#### ✅ 0.4 – Global exception filter + Helmet
 **Objective:** Prevent stack trace leakage and add standard HTTP security headers.
 
 **Key tasks:**
-- `npm install helmet` in backend; `app.use(helmet())` in `main.ts`
-- Create `src/common/filters/all-exceptions.filter.ts` implementing `ExceptionFilter`; catch `PrismaClientKnownRequestError` and `PrismaClientValidationError`, map to clean HTTP responses (400/404/409); catch unknown errors and return generic 500 with no internal details
-- Register filter globally in `main.ts`
+- ✅ `npm install helmet` in backend; `app.use(helmet())` in `main.ts`
+- ✅ Create `src/common/filters/all-exceptions.filter.ts` implementing `ExceptionFilter`; catch `PrismaClientKnownRequestError` and `PrismaClientValidationError`, map to clean HTTP responses (400/404/409); catch unknown errors and return generic 500 with no internal details
+- ✅ Register filter globally in `main.ts`
 
 **Files:**
 - `backend/src/main.ts`
@@ -242,16 +240,16 @@
 
 ---
 
-#### 0.5 – CI/CD pipeline
+#### ✅ 0.5 – CI/CD pipeline
 **Objective:** Automated lint + test on every push and pull request.
 
 **Key tasks:**
-- Create `.github/workflows/ci.yml` with jobs:
+- ✅ Create `.github/workflows/ci.yml` with jobs:
   - `backend-ci`: `npm ci`, `npm run lint`, `npm run test`
   - `frontend-ci`: `npm ci`, `npm run build`, `npm test`
-- Use Node 18.x
-- Backend tests use a test database (environment secret `DATABASE_URL_TEST`) or Prisma with SQLite in-memory for unit tests
-- Cache `node_modules` by `package-lock.json` hash
+- ✅ Use Node 18.x
+- ✅ Backend tests use a test database (environment secret `DATABASE_URL_TEST`) or Prisma with SQLite in-memory for unit tests
+- ✅ Cache `node_modules` by `package-lock.json` hash
 
 **Files:**
 - `.github/workflows/ci.yml` (new)
@@ -261,21 +259,21 @@
 
 ---
 
-#### 0.6 – Redis setup
+#### ✅ 0.6 – Redis setup
 **Objective:** Single Redis connection usable by rate limiting (Phase 0.1), chat (Phase 1.5), and future caching.
 
 **Key tasks:**
-- `npm install ioredis` in backend
-- Create `src/common/redis.service.ts` — NestJS injectable wrapping `ioredis`, connection from `REDIS_URL` env var
-- Export from `CommonModule`
-- Add `REDIS_URL` to `.env.example` and config validation (0.1)
-- Wire `@nestjs/throttler` to use Redis store
+- ✅ `npm install ioredis` in backend
+- ✅ Create `src/common/redis.service.ts` — NestJS injectable wrapping `ioredis`, connection from `REDIS_URL` env var
+- ✅ Export from `CommonModule`
+- ✅ Add `REDIS_URL` to `.env.example` and config validation (0.1)
+- ✅ Wire `@nestjs/throttler` to use Redis store (`@nest-lab/throttler-storage-redis`)
 
 **Files:**
 - `backend/src/common/redis.service.ts` (new)
 - `backend/src/common/common.module.ts`
 - `backend/.env.example`
-- `backend/src/main.ts` (ThrottlerModule config)
+- `backend/src/app.module.ts` (ThrottlerModule Redis config)
 
 **Effort:** S  
 **Validation:** Backend starts and logs Redis connection. Rate limiting is functional (see 0.1 validation).

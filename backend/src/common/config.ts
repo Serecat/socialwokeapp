@@ -5,6 +5,7 @@ export const validationSchema = Joi.object({
   JWT_SECRET: Joi.string().min(32).required(),
   CORS_ORIGIN: Joi.string().required(),
   PORT: Joi.number().optional(),
+  REDIS_URL: Joi.string().optional().default('redis://localhost:6379'),
 });
 
 export const appConfig = () => ({
