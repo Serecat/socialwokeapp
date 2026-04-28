@@ -9,9 +9,9 @@ vi.mock('axios', async (importOriginal) => {
   return {
     ...actual,
     default: {
-      ...actual.default,
+      ...actual,
       post: vi.fn().mockRejectedValue(new Error('No refresh token')),
-      create: actual.default.create,
+      create: actual.create,
     },
   };
 });

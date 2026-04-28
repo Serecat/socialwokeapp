@@ -81,3 +81,21 @@ Changes: N/A
 Approved by: N/A
 Approved at: N/A
 Plan updates made: implementation-plan.md — added ✅ checkmarks to Phase 0.1 and Phase 0.2 task lists and section headings.
+
+Timestamp: 2026-04-28T17:05:00+00:00
+Headline: Phases 0.3–0.6 – Tailwind build dep, global exception filter, Helmet, CI/CD, Redis
+Refs: branch copilot/implement-phase-03-to-06
+Summary: Implemented all tasks listed under Phases 0.3, 0.4, 0.5, and 0.6 of implementation-plan.md. Moved Tailwind CSS from CDN to a proper build dependency (v4 Vite plugin), added Helmet HTTP security headers, created a global exception filter to prevent stack-trace leakage, wired up a CI/CD pipeline via GitHub Actions, and introduced a Redis service with ioredis used as the ThrottlerModule storage backend.
+Implementation notes:
+- Phase 0.3: Installed tailwindcss v4, postcss, autoprefixer, and @tailwindcss/vite. Updated vite.config.ts to add the @tailwindcss/vite plugin (Tailwind v4 Vite-first setup). Added @import "tailwindcss" to index.css. Removed CDN <script src="https://cdn.tailwindcss.com"> from index.html. Also fixed a pre-existing TypeScript error in App.test.tsx where actual.default was referenced incorrectly (should be actual for AxiosStatic); build and tests pass.
+- Phase 0.4: Installed helmet; added app.use(helmet()) before cookieParser in main.ts. Created backend/src/common/filters/all-exceptions.filter.ts — catches PrismaClientKnownRequestError (P2002→409, P2025→404, P2003→400), PrismaClientValidationError (→400), HttpException (passed through), and unknown errors (generic 500, stack logged server-side only). Registered globally via app.useGlobalFilters().
+- Phase 0.5: Created .github/workflows/ci.yml with two parallel jobs: backend-ci (npm ci → npm run lint → npm run test) and frontend-ci (npm ci → npm run build → npm test). Both jobs use Node 18.x and cache node_modules by package-lock.json hash.
+- Phase 0.6: Installed ioredis v5 (ships own types) and @nest-lab/throttler-storage-redis. Created backend/src/common/redis.service.ts — an @Injectable() that opens an ioredis connection on module init (lazyConnect, 1 retry, offline queue disabled), logs connect/error, and exposes getClient(). Exported from CommonModule (@Global). Updated AppModule to use ThrottlerModule.forRootAsync with ThrottlerStorageRedisService backed by REDIS_URL config. Added REDIS_URL to config validation (optional, defaults to redis://localhost:6379) and .env.example.
+Validation: backend npm run build (pass), backend npm run lint (pass, no warnings), backend npm run test (1 pre-existing failure: AppController "Hello NIXON!" vs "Hello World!" — unrelated), frontend npm run build (pass), frontend npm test (pass).
+Security/privacy notes: Helmet adds X-Frame-Options, X-Content-Type-Options, X-DNS-Prefetch-Control, Strict-Transport-Security, and other standard security headers to all responses. The global exception filter ensures no Prisma error details or stack traces leak to API consumers.
+Spec/requirements changes approved: No
+If Yes:
+Changes: N/A
+Approved by: N/A
+Approved at: N/A
+Plan updates made: implementation-plan.md — added ✅ checkmarks to Phase 0.3, 0.4, 0.5, and 0.6 task lists and section headings. Updated 0.3 task list to reflect Tailwind v4 Vite plugin approach instead of init -p. Updated 0.6 files list to reference app.module.ts instead of main.ts for ThrottlerModule config.
