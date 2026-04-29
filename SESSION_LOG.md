@@ -117,3 +117,24 @@ Changes: N/A
 Approved by: N/A
 Approved at: N/A
 Plan updates made: implementation-plan.md — added ✅ checkmarks to Phase 1.1, 1.2, and 1.3 section headings and all task items.
+
+Timestamp: 2026-04-29T20:50:00+00:00
+Headline: UI redesign — purple/violet design system, icon sidebar, avatar initials, relative timestamps
+Refs: branch copilot/redesign-ui-for-mvp
+Summary: Redesigned all frontend screens to match a modern social-media aesthetic inspired by the reference image. Replaced the blue/slate colour scheme with a purple-to-violet gradient system. The Feed screen was fully restructured with a sticky icon-based left sidebar (Home, Explore, Messages, Profile nav with "Create Post" CTA and logged-in user footer), a centre column with a sticky toggle header and post cards showing avatar initials + relative timestamps, and a right sidebar with user search and trending topics. Auth screens and Profile screen were updated to the same purple theme.
+Implementation notes:
+- index.css: Added smooth scroll behaviour.
+- App.tsx: Updated loading spinner and auth background to purple gradient (from-purple-50 to-violet-100 / from-purple-50 via-white to-violet-50).
+- Login.tsx: Added SocialWoke logo mark, updated input/button/link colours to purple; heading kept as "Login" to preserve existing test assertion.
+- Signup.tsx: Same logo mark addition and purple theme; removed leftover commented-out label; standardised ellipsis characters.
+- Feed.tsx: Full rewrite. Replaced layout with a sticky three-column flex layout (left 256 px, fluid centre, right 288 px). Left sidebar has a purple gradient logo header, icon navigation (SVG inline icons — HomeIcon, ExploreIcon, MessagesIcon, ProfileIcon), a gradient "Create Post" button, and current-user avatar + logout button at bottom. Centre column has a sticky header with feed title and Following/Global pill toggle; post composer with Avatar + textarea + gradient Post button; and post cards with Avatar circle, author name, relative time (just now / Xm / Xh / Xd), text content, comment/like icon action row, collapsible comment thread with Send button. Right sidebar has user search with avatar results and trending topic tags. New state: activeView ('home'|'explore'|'messages') replaces separate feedType state; getMyProfile() call added to populate sidebar user info. Messages view shows a "coming soon" stub. Comment expand/collapse replaces always-visible comment input. Added Avatar component and helper functions (getInitials, getAvatarColor, formatRelativeTime).
+- Profile.tsx: Added purple gradient banner strip at the top of the profile card; avatar circle overlapping the banner; follow/accept/reject buttons updated to purple; interest tags changed from blue-50/blue-700 to purple-50/purple-700; edit form inputs changed to purple focus ring; back button updated with chevron icon; post stats replaced emoji with inline SVG icons; spinner added to loading state.
+- No backend changes; no new dependencies added.
+Validation: frontend npm test (1 test — pass), npx vite build (pass — 84 modules, 0 errors). Pre-existing tsc TS2688 (vitest/globals type definition not found) unrelated to this session.
+Security/privacy notes: No security-sensitive logic was touched. All changes are purely presentational.
+Spec/requirements changes approved: No
+If Yes:
+Changes: N/A
+Approved by: N/A
+Approved at: N/A
+Plan updates made: N/A

@@ -60,8 +60,11 @@ function App() {
 
   if (view === 'loading') {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-blue-100">
-        <p className="text-sm text-slate-500">Loading…</p>
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 to-violet-100">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+          <p className="text-sm text-slate-500">Loading…</p>
+        </div>
       </main>
     );
   }
@@ -93,7 +96,7 @@ function App() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 to-blue-100 px-4 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-purple-50 via-white to-violet-50 px-4 py-10">
       {authMode === 'login' ? (
         <Login onSuccess={handleLoginSuccess} switchToSignup={() => setAuthMode('signup')} />
       ) : (
