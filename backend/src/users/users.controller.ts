@@ -1,7 +1,9 @@
 import {
+  Body,
   Controller,
   Get,
   Param,
+  Patch,
   Query,
   Request,
   UseGuards,
@@ -9,6 +11,7 @@ import {
 import { Request as ExpressRequest } from 'express';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
+import { UpdateProfileDto } from './update-profile.dto';
 
 interface JwtUser {
   userId: string;
@@ -25,14 +28,27 @@ export class UsersController {
 
   @Get('me')
   async getMe(@Request() req: AuthRequest) {
-    return this.usersService.getProfileBasicsById(req.user.userId);
+    return this.usersService.getMe(req.user.userId);
   }
+
+  @Patch('me')
+  async updateMe(@Request() req: AuthRequest, @Body() dto: UpdateProfileDto) {
+    return this.usersService.updateProfile(req.user.userId, dto);
+  }
+
   @Get('search')
   async searchUsers(@Query('q') query?: string) {
     return this.usersService.searchUsers(query ?? '');
   }
+
   @Get(':id')
-  async getUserProfile(@Param('id') userId: string) {
-    return this.usersService.getProfileBasicsById(userId);
+  async getUserProfile(
+    @Param('id') targetUserId: string,
+    @Request() req: AuthRequest,
+  ) {
+    return this.usersService.getProfileBasicsById(
+      req.user.userId,
+      targetUserId,
+    );
   }
 }

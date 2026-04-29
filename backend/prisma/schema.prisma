@@ -13,22 +13,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum FollowRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
   firstName String
   lastName  String
+  bio       String?  @db.Text
+  isPrivate Boolean  @default(false)
+  role      UserRole @default(USER)
+
+  gdprConsent   Boolean   @default(false)
+  gdprConsentAt DateTime?
+  bannedAt      DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  posts     Post[]
 
+  posts         Post[]
   comments      Comment[]
   likes         PostLike[]
   refreshTokens RefreshToken[]
 
   followers Follow[] @relation("followers")
   following Follow[] @relation("following")
+
+  interests UserInterest[]
+
+  sentFollowRequests     FollowRequest[] @relation("followRequestSender")
+  receivedFollowRequests FollowRequest[] @relation("followRequestReceiver")
+
+  chatMessagesSent     ChatMessage[] @relation("chatMessageSender")
+  chatMessagesReceived ChatMessage[] @relation("chatMessageReceiver")
+
+  auditLogsAsAdmin AuditLog[]
 }
 
 model RefreshToken {
@@ -110,4 +139,62 @@ model Follow {
   following User @relation("followers", fields: [followingId], references: [id])
 
   @@id([followerId, followingId])
+}
+
+model Interest {
+  id   String @id @default(cuid())
+  name String @unique
+  slug String @unique
+
+  users UserInterest[]
+}
+
+model UserInterest {
+  userId     String
+  interestId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interest Interest @relation(fields: [interestId], references: [id], onDelete: Cascade)
+
+  @@id([userId, interestId])
+}
+
+model FollowRequest {
+  id         String              @id @default(cuid())
+  fromUserId String
+  toUserId   String
+  status     FollowRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+
+  fromUser User @relation("followRequestSender", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("followRequestReceiver", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId, status])
+}
+
+model ChatMessage {
+  id         String    @id @default(cuid())
+  senderId   String
+  receiverId String
+  content    String    @db.Text
+  createdAt  DateTime  @default(now())
+  readAt     DateTime?
+
+  sender   User @relation("chatMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User @relation("chatMessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@index([senderId, receiverId, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String
+  action     String
+  targetType String
+  targetId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  admin User @relation(fields: [adminId], references: [id], onDelete: Cascade)
 }

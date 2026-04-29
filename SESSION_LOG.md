@@ -99,3 +99,21 @@ Changes: N/A
 Approved by: N/A
 Approved at: N/A
 Plan updates made: implementation-plan.md — added ✅ checkmarks to Phase 0.3, 0.4, 0.5, and 0.6 task lists and section headings. Updated 0.3 task list to reflect Tailwind v4 Vite plugin approach instead of init -p. Updated 0.6 files list to reference app.module.ts instead of main.ts for ThrottlerModule config.
+
+Timestamp: 2026-04-29T18:57:20+00:00
+Headline: Phases 1.1–1.3 – Extended schema, profile module, and social graph
+Refs: branch copilot/implement-phase-1-1-through-1-3
+Summary: Implemented all tasks listed under Phases 1.1, 1.2, and 1.3 of implementation-plan.md. Extended the Prisma schema with all PRD-required models and fields, built a full profile read/edit API with privacy enforcement, and implemented the complete social graph (follow/unfollow, follow requests, accept/reject) on both backend and frontend.
+Implementation notes:
+- Phase 1.1: Added UserRole enum (USER, ADMIN) and FollowRequestStatus enum (PENDING, ACCEPTED, REJECTED). Added bio, isPrivate, role, gdprConsent, gdprConsentAt, bannedAt fields to User. Added new models: Interest (id, name, slug — all unique), UserInterest (composite PK userId+interestId, cascades), FollowRequest (unique on fromUserId+toUserId, indexed on toUserId+status), ChatMessage (indexed on senderId+receiverId+createdAt), AuditLog (adminId FK, metadata JSON). Created manual migration SQL in prisma/migrations/20260429000000_phase_1_1_extended_schema/. Ran prisma generate to validate schema.
+- Phase 1.2: Created UpdateProfileDto (optional firstName, lastName, bio, isPrivate, interestIds with class-validator). Rewrote UsersService: getMe() returns full profile including email, bio, isPrivate, role, gdprConsent, interests array, followerCount, followingCount; getProfileBasicsById(requesterId, targetUserId) returns follow status and enforces privacy (non-followers of private accounts receive name-only response); updateProfile() replaces interest set in a Prisma $transaction then updates user fields. Added PATCH /users/me to UsersController. GET /users/:id now passes req.user.userId as requesterId and returns followStatus ('following'|'requested'|'none') in the response.
+- Phase 1.3: Implemented SocialGraphService with follow() (public → immediate Follow, private → FollowRequest PENDING; idempotent via upsert), unfollow() (removes Follow or cancels PENDING request), getFollowers/getFollowing (cursor-paginated, limit 20), getFollowRequests() (pending incoming only), acceptFollowRequest() (atomic: update status + upsert Follow in $transaction), rejectFollowRequest(). All accept/reject methods validate ownership (403 if not the target user) and require PENDING status. SocialGraphController exposes all 7 endpoints under /social-graph, all guarded by JwtAuthGuard. SocialGraphModule exports SocialGraphService for future use.
+- Frontend: Updated UserProfileBasics interface to include bio, isPrivate, followerCount, followingCount, interests. Added new API helpers: updateMyProfile, followUser, unfollowUser, getFollowers, getFollowing, getFollowRequests, acceptFollowRequest, rejectFollowRequest. Rewrote Profile.tsx to show bio, follower/following counts, interest tags, follow/unfollow button with live status ('following'→'Unfollow', 'requested'→'Cancel Request', 'none'→'Follow'), inline edit form for own profile (firstName, lastName, bio, isPrivate toggle), pending follow requests panel with accept/reject buttons, and privacy wall for private accounts where viewer is not a follower. Replaced localStorage.getItem('access_token') check with getAccessToken() from the in-memory token store.
+Validation: backend npm run build (pass), backend npm run lint (pass, no warnings), backend npm run test (1 test — pass), frontend npm run build (pass), frontend npm test (pass).
+Security/privacy notes: Private account profiles return only name and counts to non-followers — bio, interests, and posts are hidden. Follow request ownership is validated server-side (403 for mismatched userId). No email is exposed via profile endpoints.
+Spec/requirements changes approved: No
+If Yes:
+Changes: N/A
+Approved by: N/A
+Approved at: N/A
+Plan updates made: implementation-plan.md — added ✅ checkmarks to Phase 1.1, 1.2, and 1.3 section headings and all task items.

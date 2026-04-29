@@ -102,9 +102,13 @@ export interface LoginPayload {
 
 export interface UserProfileBasics {
   id: string;
-  email: string;
   firstName: string;
   lastName: string;
+  bio?: string;
+  isPrivate?: boolean;
+  followerCount?: number;
+  followingCount?: number;
+  interests?: { id: string; name: string; slug: string }[];
 }
 
 export type FeedType = 'followers' | 'global';
@@ -212,6 +216,81 @@ export const getMyPosts = async (cursor?: string) => {
   });
 
   return response.data as PaginatedPostsResponse;
+};
+
+export interface UpdateProfilePayload {
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  isPrivate?: boolean;
+  interestIds?: string[];
+}
+
+export type FollowStatus = 'following' | 'requested' | 'none';
+
+export interface FollowResult {
+  status: 'following' | 'requested' | 'unfollowed' | 'request_cancelled' | 'not_following';
+}
+
+export interface UserBasic {
+  id: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface FollowRequest {
+  id: string;
+  fromUser: UserBasic;
+  createdAt: string;
+}
+
+export interface PaginatedUsersResponse {
+  data: UserBasic[];
+  nextCursor: string | null;
+}
+
+export const updateMyProfile = async (payload: UpdateProfilePayload) => {
+  const response = await api.patch('/users/me', payload);
+  return response.data as UserProfileBasics;
+};
+
+export const followUser = async (userId: string): Promise<FollowResult> => {
+  const response = await api.post(`/social-graph/follow/${userId}`);
+  return response.data as FollowResult;
+};
+
+export const unfollowUser = async (userId: string): Promise<FollowResult> => {
+  const response = await api.delete(`/social-graph/follow/${userId}`);
+  return response.data as FollowResult;
+};
+
+export const getFollowers = async (userId: string, cursor?: string): Promise<PaginatedUsersResponse> => {
+  const response = await api.get(`/social-graph/followers/${userId}`, {
+    params: cursor ? { cursor } : {},
+  });
+  return response.data as PaginatedUsersResponse;
+};
+
+export const getFollowing = async (userId: string, cursor?: string): Promise<PaginatedUsersResponse> => {
+  const response = await api.get(`/social-graph/following/${userId}`, {
+    params: cursor ? { cursor } : {},
+  });
+  return response.data as PaginatedUsersResponse;
+};
+
+export const getFollowRequests = async (): Promise<FollowRequest[]> => {
+  const response = await api.get('/social-graph/follow-requests');
+  return response.data as FollowRequest[];
+};
+
+export const acceptFollowRequest = async (requestId: string): Promise<{ status: string }> => {
+  const response = await api.post(`/social-graph/follow-requests/${requestId}/accept`);
+  return response.data as { status: string };
+};
+
+export const rejectFollowRequest = async (requestId: string): Promise<{ status: string }> => {
+  const response = await api.post(`/social-graph/follow-requests/${requestId}/reject`);
+  return response.data as { status: string };
 };
 
 export const logoutUser = async () => {
