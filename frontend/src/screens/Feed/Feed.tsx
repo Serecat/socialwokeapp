@@ -13,6 +13,7 @@ import {
   UserProfileBasics,
 } from '../../services/api';
 import { getInitials, getAvatarColor } from '../../utils/avatar';
+import Chat from '../Chat/Chat';
 
 interface FeedProps {
   onOpenProfile: () => void;
@@ -120,7 +121,7 @@ const NAV_ITEMS: NavItem[] = [
 
 const Feed: React.FC<FeedProps> = ({ onOpenProfile, onOpenUserProfile, onLogout }) => {
   const [activeView, setActiveView] = useState<ActiveView>('home');
-  const feedType: FeedType = activeView === 'explore' ? 'global' : 'followers';
+  const feedType: FeedType = activeView === 'explore' ? 'explore' : 'followers';
 
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [commentsByPost, setCommentsByPost] = useState<Record<string, PostComment[]>>({});
@@ -331,18 +332,14 @@ const Feed: React.FC<FeedProps> = ({ onOpenProfile, onOpenUserProfile, onLogout 
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Global
+                Explore
               </button>
             </div>
           </div>
 
           {activeView === 'messages' ? (
-            /* Messages stub */
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <MessagesIcon className="mb-4 h-12 w-12 text-slate-300" />
-              <h2 className="text-lg font-semibold text-slate-700">Messages coming soon</h2>
-              <p className="mt-1 text-sm text-slate-500">Real-time chat is on the roadmap.</p>
-            </div>
+            /* Real-time Chat */
+            <Chat />
           ) : (
             <div className="divide-y divide-slate-100">
               {/* Post composer */}
@@ -388,7 +385,7 @@ const Feed: React.FC<FeedProps> = ({ onOpenProfile, onOpenUserProfile, onLogout 
                 </div>
               ) : posts.length === 0 ? (
                 <div className="py-16 text-center text-sm text-slate-500">
-                  No posts yet. Follow some people or check the Global feed.
+                  No posts yet. Follow some people or check the Explore feed.
                 </div>
               ) : (
                 posts.map((post) => (

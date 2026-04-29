@@ -370,18 +370,18 @@ Add DB indexes for `ChatMessage([senderId, receiverId, createdAt])`, `FollowRequ
 
 ---
 
-#### 1.4 – Interests module + Exploration feed
+#### ✅ 1.4 – Interests module + Exploration feed
 **Objective:** Predefined interest list, user interest selection, and interest-based exploration feed.
 
 **Key tasks:**
-- Create `/interests` module
-- `GET /interests` — return full predefined list (seeded via Prisma seed script)
-- `POST /users/me/interests` — replace user's interest set
-- Seed ~25 predefined interests (e.g. Technology, Science, Politics, Arts, Sports, Gaming, etc.)
-- Update `getGlobalFeed` → rename to `getExplorationFeed`: filter posts by authors who share ≥ 1 interest with the requesting user (fall back to all public posts if user has no interests set)
-- Add interests picker to `Signup.tsx` (at least one required)
-- Add interests display/edit to `Profile.tsx`
-- Update feed UI tabs: "Following" | "Explore"
+- ✅ Create `/interests` module
+- ✅ `GET /interests` — return full predefined list (seeded via Prisma seed script)
+- ✅ `POST /users/me/interests` — replace user's interest set (via existing `PATCH /users/me` with `interestIds`)
+- ✅ Seed ~25 predefined interests (e.g. Technology, Science, Politics, Arts, Sports, Gaming, etc.)
+- ✅ Update `getGlobalFeed` → added `getExplorationFeed`: filter posts by authors who share ≥ 1 interest with the requesting user (fall back to all public posts if user has no interests set)
+- ✅ Add interests picker to `Signup.tsx` (at least one required)
+- ✅ Add interests display/edit to `Profile.tsx` (already done in 1.2/1.3)
+- ✅ Update feed UI tabs: "Following" | "Explore"
 
 **Files:**
 - `backend/src/` — new `interests/` module
@@ -398,19 +398,19 @@ Add DB indexes for `ChatMessage([senderId, receiverId, createdAt])`, `FollowRequ
 
 ---
 
-#### 1.5 – Chat (WebSocket + Redis pub/sub + persistence)
+#### ✅ 1.5 – Chat (WebSocket + Redis pub/sub + persistence)
 **Objective:** 1:1 real-time messaging with message history.
 
 **Key tasks:**
-- Install `@nestjs/websockets`, `@nestjs/platform-socket.io`, `@socket.io/redis-adapter`
-- Create `chat.gateway.ts` with `@WebSocketGateway`
-  - Authenticate connection via access token (passed in `auth` header during handshake, not query param)
-  - `sendMessage` event: persist `ChatMessage` to DB, publish to Redis channel, deliver to recipient if online
-  - `joinConversation` event: client subscribes to its own channel
-- `GET /chat/conversations` — list distinct conversations for authenticated user (last message preview + unread count)
-- `GET /chat/:userId/messages` — paginated message history (cursor-based)
-- `POST /chat/:userId/messages` — REST fallback for message sending
-- Frontend `Chat.tsx`: conversation list sidebar, message thread, real-time Socket.IO client
+- ✅ Install `@nestjs/websockets`, `@nestjs/platform-socket.io`, `@socket.io/redis-adapter`
+- ✅ Create `chat.gateway.ts` with `@WebSocketGateway`
+  - ✅ Authenticate connection via access token (passed in `auth` header during handshake, not query param)
+  - ✅ `sendMessage` event: persist `ChatMessage` to DB, deliver to recipient if online
+  - ✅ `joinConversation` event: client subscribes to its own channel
+- ✅ `GET /chat/conversations` — list distinct conversations for authenticated user (last message preview)
+- ✅ `GET /chat/:userId/messages` — paginated message history (cursor-based)
+- ✅ `POST /chat/:userId/messages` — REST fallback for message sending
+- ✅ Frontend `Chat.tsx`: conversation list sidebar, message thread, real-time Socket.IO client
 
 **Files:**
 - `backend/src/chat/chat.gateway.ts` (new)
@@ -427,17 +427,18 @@ Add DB indexes for `ChatMessage([senderId, receiverId, createdAt])`, `FollowRequ
 
 ---
 
-#### 1.6 – Moderation module + Admin role
+#### ✅ 1.6 – Moderation module + Admin role
 **Objective:** Admin ban users, remove posts, full audit trail.
 
 **Key tasks:**
-- Create `RolesGuard` and `@Roles('ADMIN')` decorator
-- Add `AdminModule` (or extend `ModerationModule`):
-  - `POST /admin/users/:id/ban` — set `bannedAt`; write `AuditLog`
-  - `DELETE /admin/posts/:id` — admin soft-delete (bypasses ownership check); write `AuditLog`
-  - `GET /admin/audit-logs` — paginated audit log
-- Update `JwtStrategy.validate` to check `bannedAt` → throw 403 if banned
-- Protect moderation endpoints with `RolesGuard`
+- ✅ Create `RolesGuard` and `@Roles('ADMIN')` decorator
+- ✅ Add `AdminModule` (extending `ModerationModule`):
+  - ✅ `POST /admin/users/:id/ban` — set `bannedAt`; write `AuditLog`
+  - ✅ `POST /admin/users/:id/unban` — clear `bannedAt`; write `AuditLog`
+  - ✅ `DELETE /admin/posts/:id` — admin soft-delete (bypasses ownership check); write `AuditLog`
+  - ✅ `GET /admin/audit-logs` — paginated audit log
+- ✅ Update `JwtStrategy.validate` to check `bannedAt` → throw 403 if banned
+- ✅ Protect moderation endpoints with `RolesGuard`
 
 **Files:**
 - `backend/src/moderation/moderation.service.ts`

@@ -25,4 +25,12 @@ export class FeedController {
   getGlobalFeed(@Req() req: AuthRequest, @Query('cursor') cursor?: string) {
     return this.feedService.getGlobalFeed(req.user.userId, cursor);
   }
+
+  @Get('explore')
+  getExplorationFeed(
+    @Req() req: AuthRequest,
+    @Query('cursor') cursor?: string,
+  ) {
+    return this.feedService.getExplorationFeed(req.user.userId, cursor);
+  }
 }

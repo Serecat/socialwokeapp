@@ -93,6 +93,7 @@ export interface RegisterPayload {
   lastName: string;
   email: string;
   password: string;
+  interestIds?: string[];
 }
 
 export interface LoginPayload {
@@ -112,7 +113,7 @@ export interface UserProfileBasics {
   followStatus?: 'following' | 'requested' | 'none';
 }
 
-export type FeedType = 'followers' | 'global';
+export type FeedType = 'followers' | 'global' | 'explore';
 
 export interface PostAuthor {
   id: string;
@@ -179,7 +180,14 @@ export const searchUsers = async (query: string) => {
 };
 
 export const getFeed = async (feedType: FeedType, cursor?: string) => {
-  const endpoint = feedType === 'global' ? '/feed/global' : '/feed';
+  let endpoint: string;
+  if (feedType === 'explore') {
+    endpoint = '/feed/explore';
+  } else if (feedType === 'global') {
+    endpoint = '/feed/global';
+  } else {
+    endpoint = '/feed';
+  }
   const response = await api.get(endpoint, {
     params: {
       ...(cursor ? { cursor } : {}),
@@ -292,6 +300,59 @@ export const acceptFollowRequest = async (requestId: string): Promise<{ status: 
 export const rejectFollowRequest = async (requestId: string): Promise<{ status: string }> => {
   const response = await api.post(`/social-graph/follow-requests/${requestId}/reject`);
   return response.data as { status: string };
+};
+
+export interface Interest {
+  id: string;
+  name: string;
+  slug: string;
+}
+
+export const getInterests = async (): Promise<Interest[]> => {
+  const response = await api.get('/interests');
+  return response.data as Interest[];
+};
+
+export interface ChatMessageItem {
+  id: string;
+  content: string;
+  createdAt: string;
+  sender: UserBasic;
+  receiver: UserBasic;
+}
+
+export interface ChatConversation {
+  user: UserBasic;
+  lastMessage: string;
+  lastAt: string;
+}
+
+export interface PaginatedMessagesResponse {
+  data: ChatMessageItem[];
+  nextCursor: string | null;
+}
+
+export const getChatConversations = async (): Promise<ChatConversation[]> => {
+  const response = await api.get('/chat/conversations');
+  return response.data as ChatConversation[];
+};
+
+export const getChatMessages = async (
+  userId: string,
+  cursor?: string,
+): Promise<PaginatedMessagesResponse> => {
+  const response = await api.get(`/chat/${userId}/messages`, {
+    params: cursor ? { cursor } : {},
+  });
+  return response.data as PaginatedMessagesResponse;
+};
+
+export const sendChatMessage = async (
+  userId: string,
+  content: string,
+): Promise<ChatMessageItem> => {
+  const response = await api.post(`/chat/${userId}/messages`, { content });
+  return response.data as ChatMessageItem;
 };
 
 export const logoutUser = async () => {

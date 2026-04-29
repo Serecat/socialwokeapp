@@ -18,6 +18,7 @@ export class AuthController {
       body.password,
       body.firstName,
       body.lastName,
+      body.interestIds,
     );
   }
 
