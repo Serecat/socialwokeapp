@@ -16,6 +16,7 @@ import {
 } from '../../services/api';
 import api from '../../services/api';
 import { getAccessToken } from '../../services/api';
+import { getAvatarColor, getInitials } from '../../utils/avatar';
 
 interface ProfileProps {
   userId?: string;
@@ -210,10 +211,8 @@ const Profile: React.FC<ProfileProps> = ({ userId, onBackToFeed, onUnauthorized 
             <>
               {/* Avatar overlapping the banner */}
               <div className="-mt-8 mb-4 flex items-end justify-between">
-                <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border-4 border-white text-xl font-bold text-white shadow-sm ${
-                  ['bg-purple-500','bg-violet-500','bg-pink-500','bg-indigo-500','bg-teal-500'][profile.firstName.charCodeAt(0) % 5]
-                }`}>
-                  {profile.firstName.charAt(0).toUpperCase()}{profile.lastName.charAt(0).toUpperCase()}
+                <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border-4 border-white text-xl font-bold text-white shadow-sm ${getAvatarColor(profile.firstName)}`}>
+                  {getInitials(profile.firstName, profile.lastName)}
                 </div>
                 <div className="flex shrink-0 gap-2">
                   {isOwnProfile && (

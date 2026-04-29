@@ -12,6 +12,7 @@ import {
   togglePostLike,
   UserProfileBasics,
 } from '../../services/api';
+import { getInitials, getAvatarColor } from '../../utils/avatar';
 
 interface FeedProps {
   onOpenProfile: () => void;
@@ -22,21 +23,6 @@ interface FeedProps {
 type ActiveView = 'home' | 'explore' | 'messages';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-
-const getInitials = (firstName: string, lastName: string): string =>
-  `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
-
-const AVATAR_COLORS = [
-  'bg-purple-500',
-  'bg-violet-500',
-  'bg-pink-500',
-  'bg-indigo-500',
-  'bg-teal-500',
-  'bg-orange-500',
-];
-
-const getAvatarColor = (name: string): string =>
-  AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 
 const formatRelativeTime = (isoDate: string): string => {
   const diffMs = Date.now() - new Date(isoDate).getTime();
