@@ -24,6 +24,7 @@ export class AuthService {
     pass: string,
     firstName: string,
     lastName: string,
+    interestIds?: string[],
   ): Promise<RegisterResponseDto> {
     const hashedPassword = await bcrypt.hash(pass, 10);
 
@@ -36,7 +37,19 @@ export class AuthService {
     }
 
     const user = await this.prisma.user.create({
-      data: { email, password: hashedPassword, firstName, lastName },
+      data: {
+        email,
+        password: hashedPassword,
+        firstName,
+        lastName,
+        ...(interestIds && interestIds.length > 0
+          ? {
+              interests: {
+                create: interestIds.map((interestId) => ({ interestId })),
+              },
+            }
+          : {}),
+      },
     });
 
     return {

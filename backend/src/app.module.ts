@@ -13,6 +13,7 @@ import { FeedsModule } from './feeds/feeds.module';
 import { SocialGraphModule } from './social-graph/social-graph.module';
 import { ModerationModule } from './moderation/moderation.module';
 import { CommonModule } from './common/common.module';
+import { InterestsModule } from './interests/interests.module';
 import { appConfig, validationSchema } from './common/config';
 
 @Module({
@@ -39,6 +40,7 @@ import { appConfig, validationSchema } from './common/config';
     SocialGraphModule,
     ModerationModule,
     CommonModule,
+    InterestsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
