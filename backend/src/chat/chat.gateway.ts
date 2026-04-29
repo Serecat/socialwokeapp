@@ -47,7 +47,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: AuthenticatedSocket): Promise<void> {
     try {
       // Token is passed in the auth object during handshake (NOT in query params)
-      const token = client.handshake.auth?.token as string | undefined;
+      const auth = client.handshake.auth as Record<string, unknown> | undefined;
+      const token = typeof auth?.token === 'string' ? auth.token : undefined;
       if (!token) {
         throw new UnauthorizedException('No token provided');
       }

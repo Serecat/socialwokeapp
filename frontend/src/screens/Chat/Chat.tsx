@@ -46,9 +46,10 @@ const Chat: React.FC<ChatProps> = ({ initialPartnerId }) => {
     socketRef.current = socket;
 
     socket.on('newMessage', (msg: ChatMessageItem) => {
+      // newMessage is only emitted to the recipient, so msg.sender is always the partner
+      const partner = msg.sender;
       setMessages((prev) => [msg, ...prev]);
       setConversations((prev) => {
-        const partner = msg.sender.id === activePartner?.id ? msg.sender : msg.receiver;
         const existing = prev.find((c) => c.user.id === partner.id);
         if (existing) {
           return prev.map((c) =>
@@ -62,7 +63,20 @@ const Chat: React.FC<ChatProps> = ({ initialPartnerId }) => {
     });
 
     socket.on('messageSent', (msg: ChatMessageItem) => {
+      // messageSent is only emitted to the sender, so msg.receiver is the partner
+      const partner = msg.receiver;
       setMessages((prev) => [msg, ...prev]);
+      setConversations((prev) => {
+        const existing = prev.find((c) => c.user.id === partner.id);
+        if (existing) {
+          return prev.map((c) =>
+            c.user.id === partner.id
+              ? { ...c, lastMessage: msg.content, lastAt: msg.createdAt }
+              : c,
+          );
+        }
+        return [{ user: partner, lastMessage: msg.content, lastAt: msg.createdAt }, ...prev];
+      });
     });
 
     return () => {
