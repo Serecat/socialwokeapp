@@ -284,25 +284,25 @@
 
 ---
 
-#### 1.1 – Extended schema
+#### ✅ 1.1 – Extended schema
 **Objective:** Bring the Prisma schema in line with all PRD requirements in one migration.
 
 **Key tasks:**
 
 Add to `User` model:
-- `bio String? @db.Text`
-- `isPrivate Boolean @default(false)`
-- `role UserRole @default(USER)` (enum: `USER`, `ADMIN`)
-- `gdprConsent Boolean @default(false)`
-- `gdprConsentAt DateTime?`
-- `bannedAt DateTime?`
+- ✅ `bio String? @db.Text`
+- ✅ `isPrivate Boolean @default(false)`
+- ✅ `role UserRole @default(USER)` (enum: `USER`, `ADMIN`)
+- ✅ `gdprConsent Boolean @default(false)`
+- ✅ `gdprConsentAt DateTime?`
+- ✅ `bannedAt DateTime?`
 
 New models:
-- `Interest` — `id`, `name` (unique), `slug` (unique)
-- `UserInterest` — join table `userId + interestId` (composite PK)
-- `FollowRequest` — `id`, `fromUserId`, `toUserId`, `status` (enum: `PENDING`, `ACCEPTED`, `REJECTED`), `createdAt`
-- `ChatMessage` — `id`, `senderId`, `receiverId`, `content`, `createdAt`, `readAt DateTime?`
-- `AuditLog` — `id`, `adminId`, `action String`, `targetType String`, `targetId String`, `metadata Json?`, `createdAt`
+- ✅ `Interest` — `id`, `name` (unique), `slug` (unique)
+- ✅ `UserInterest` — join table `userId + interestId` (composite PK)
+- ✅ `FollowRequest` — `id`, `fromUserId`, `toUserId`, `status` (enum: `PENDING`, `ACCEPTED`, `REJECTED`), `createdAt`
+- ✅ `ChatMessage` — `id`, `senderId`, `receiverId`, `content`, `createdAt`, `readAt DateTime?`
+- ✅ `AuditLog` — `id`, `adminId`, `action String`, `targetType String`, `targetId String`, `metadata Json?`, `createdAt`
 
 Add DB indexes for `ChatMessage([senderId, receiverId, createdAt])`, `FollowRequest([toUserId, status])`.
 
@@ -317,15 +317,15 @@ Add DB indexes for `ChatMessage([senderId, receiverId, createdAt])`, `FollowRequ
 
 ---
 
-#### 1.2 – Profile module (read + edit)
+#### ✅ 1.2 – Profile module (read + edit)
 **Objective:** Full profile with bio, interests, privacy toggle, follower/following counts.
 
 **Key tasks:**
-- `PATCH /users/me` — update `firstName`, `lastName`, `bio`, `isPrivate`, interests (replace set)
-- Update `GET /users/me` response to include `bio`, `isPrivate`, `interests`, `followerCount`, `followingCount`
-- Update `GET /users/:id` — if target account is private and requester is not a follower, return limited info (name only, no bio/posts)
-- Frontend `Profile.tsx` — add bio display, follow/unfollow button (calls Phase 1.3 endpoints), edit form for own profile
-- DTOs: `UpdateProfileDto`
+- ✅ `PATCH /users/me` — update `firstName`, `lastName`, `bio`, `isPrivate`, interests (replace set)
+- ✅ Update `GET /users/me` response to include `bio`, `isPrivate`, `interests`, `followerCount`, `followingCount`
+- ✅ Update `GET /users/:id` — if target account is private and requester is not a follower, return limited info (name only, no bio/posts)
+- ✅ Frontend `Profile.tsx` — add bio display, follow/unfollow button (calls Phase 1.3 endpoints), edit form for own profile
+- ✅ DTOs: `UpdateProfileDto`
 
 **Files:**
 - `backend/src/users/users.service.ts`
@@ -341,20 +341,20 @@ Add DB indexes for `ChatMessage([senderId, receiverId, createdAt])`, `FollowRequ
 
 ---
 
-#### 1.3 – Social Graph module
+#### ✅ 1.3 – Social Graph module
 **Objective:** Follow/unfollow + private account follow request flow.
 
 **Key tasks:**
-- `POST /social-graph/follow/:userId`
+- ✅ `POST /social-graph/follow/:userId`
   - Public account → create `Follow` immediately
   - Private account → create `FollowRequest` with status `PENDING`; return `{ status: 'requested' }`
-- `DELETE /social-graph/follow/:userId` — unfollow (delete `Follow` or cancel `FollowRequest`)
-- `GET /social-graph/followers/:userId` — paginated followers list
-- `GET /social-graph/following/:userId` — paginated following list
-- `GET /social-graph/follow-requests` — own pending incoming requests (auth required)
-- `POST /social-graph/follow-requests/:requestId/accept`
-- `POST /social-graph/follow-requests/:requestId/reject`
-- Frontend: follow/unfollow button on profile, pending requests indicator
+- ✅ `DELETE /social-graph/follow/:userId` — unfollow (delete `Follow` or cancel `FollowRequest`)
+- ✅ `GET /social-graph/followers/:userId` — paginated followers list
+- ✅ `GET /social-graph/following/:userId` — paginated following list
+- ✅ `GET /social-graph/follow-requests` — own pending incoming requests (auth required)
+- ✅ `POST /social-graph/follow-requests/:requestId/accept`
+- ✅ `POST /social-graph/follow-requests/:requestId/reject`
+- ✅ Frontend: follow/unfollow button on profile, pending requests indicator
 
 **Files:**
 - `backend/src/social-graph/social-graph.service.ts`
