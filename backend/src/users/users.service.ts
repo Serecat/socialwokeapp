@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../common/prisma.service';
 import { UpdateProfileDto } from './update-profile.dto';
 
@@ -190,11 +186,5 @@ export class UsersService {
     });
 
     return request?.status === 'PENDING' ? 'requested' : 'none';
-  }
-
-  assertOwnership(requesterId: string, targetUserId: string) {
-    if (requesterId !== targetUserId) {
-      throw new ForbiddenException('Access denied');
-    }
   }
 }

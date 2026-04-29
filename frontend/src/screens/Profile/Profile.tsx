@@ -61,8 +61,7 @@ const Profile: React.FC<ProfileProps> = ({ userId, onBackToFeed, onUnauthorized 
           ]);
           setProfile(profileResponse);
           setPosts(postsResponse.data.data as FeedPost[]);
-          const status = (profileResponse as UserProfileBasics & { followStatus?: 'following' | 'requested' | 'none' }).followStatus ?? 'none';
-          setFollowStatus(status);
+          setFollowStatus(profileResponse.followStatus ?? 'none');
         } else {
           const [profileResponse, postsResponse] = await Promise.all([getMyProfile(), getMyPosts()]);
           setProfile(profileResponse);

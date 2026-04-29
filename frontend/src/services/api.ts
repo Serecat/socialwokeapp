@@ -109,6 +109,7 @@ export interface UserProfileBasics {
   followerCount?: number;
   followingCount?: number;
   interests?: { id: string; name: string; slug: string }[];
+  followStatus?: 'following' | 'requested' | 'none';
 }
 
 export type FeedType = 'followers' | 'global';
